@@ -24,6 +24,31 @@ pub mod register_devices {
         device_object.deviceName = _deviceName;
         Ok(())
     }
+
+    pub fn delete_device(ctx: Context<DeleteDevice>) -> Result<()> {
+        let device_account = &ctx.accounts.device_object;
+
+        // Ensure that the signer is the owner of the Device account
+        if device_account.authority == ctx.accounts.authority.key() {
+            ctx.accounts
+                .device_object
+                .close(ctx.accounts.authority.to_account_info())?;
+        }
+        Ok(())
+    }
+
+}
+// Define the context for deleting a Device account
+#[derive(Accounts)]
+#[instruction()]
+pub struct DeleteDevice<'info> {
+    #[account(mut)]
+    pub authority: Signer<'info>, // Signer must be the owner of the Device account
+
+    #[account(mut, close = authority)]
+    pub device_object: Box<Account<'info, Device>>,
+
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
